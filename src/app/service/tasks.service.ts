@@ -1,0 +1,111 @@
+import { Injectable } from '@angular/core';
+import { AngularFirestore } from '@angular/fire/compat/firestore';
+
+import { Storage } from '@capacitor/storage';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class TasksService {
+
+  private tasks : Task[] = [];
+
+  private collectionName : string = 'Task';
+
+  constructor(private firestore : AngularFirestore) { }
+
+  public getTasks(): Task[]{
+    return this.tasks;
+  };
+  
+  public addTask(value: string, date: string){
+    let task : Task;
+    if(date!=""){
+      date=date.replace(/-/g, "/");
+      task = {value: value, date: new Date(date), done: false}
+    }else{
+      task = {value: value, done: false}
+    }
+    
+    this.tasks.push(task);
+    this.addToFirestore(task);
+    this.setToStorage();
+
+  };
+
+  public delTask(index: number){
+    this.tasks.splice(index, 1);
+    this.setToStorage();
+  };
+
+  public updateTask(id, value: string, date: string, done: boolean){
+    let task : Task;
+    if(date!=""){
+      date=date.replace(/-/g, "/");
+      task = {value: value, date: new Date(date), done: done}
+    }else{
+      task = {value: value, done: done}
+    }
+    this.updateOnFirestore(id, task);
+    /*
+    let task : Task = this.tasks[index];
+    task.value=value;
+    date=date.replace(/-/g, "/");
+    task.date= new Date(date);
+    this.tasks.splice(index, 1, task);
+    this.setToStorage();*/
+  };
+
+  public updateTaskDone(id, task){
+    task.done = !task.done;
+    this.updateOnFirestore(id, task);
+  };
+
+  public async setToStorage() {
+    await Storage.set({
+      key: 'tasks',
+      value: JSON.stringify(this.tasks)
+    });
+  };
+
+  public async getFromStorage() {
+    const resp = await Storage.get({ key: 'tasks' });
+    let tempTasks : any[]= JSON.parse(resp.value);
+    if(!tempTasks!=null){
+      for(let t of tempTasks){
+        if(t.date!=null){
+          t.date = t.date.substring(0,10);
+          t.date = t.date.replace(/-/g, "/");
+        }else{
+          t.date = "";
+        }
+        let task: Task = {value: t.value, date: new Date(t.date), done: t.done}
+        this.tasks.push(task);
+      }
+    }
+  };
+
+
+  public addToFirestore(record : Task){
+    return this.firestore.collection(this.collectionName).add(record);
+  };
+
+  public getFromFirestore(){
+    return this.firestore.collection(this.collectionName).valueChanges({idField : "id"});
+  };
+
+  public updateOnFirestore(recordId, record: Task){
+    this.firestore.doc(this.collectionName + '/' + recordId).update(record);
+  };
+
+  public deleteOnFirestore(recordId){
+    this.firestore.doc(this.collectionName + '/' + recordId).delete();
+  };
+  
+}
+
+interface Task{
+  value:string;
+  date?:Date;
+  done:boolean;
+};

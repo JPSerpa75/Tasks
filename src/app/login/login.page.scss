@@ -1,0 +1,23 @@
+ion-content{
+    --ion-background-color: rgb(253, 255, 108);
+    --background: none;
+    background-image: url('../../assets/background.webp');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center top;
+    text-align: center;
+    --padding-bottom: 1em;
+    --padding-end: 1em;
+    --padding-start: 1em;
+    --padding-top: 1em;
+
+    ion-button{
+        margin: 0.9375em;
+    }
+
+    img{
+        margin-top: 4.5em;
+        width: 15em;
+        margin-bottom: 2em;
+    }
+}

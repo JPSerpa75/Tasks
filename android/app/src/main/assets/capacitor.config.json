@@ -1,0 +1,6 @@
+{
+	"appId": "io.ionic.starter",
+	"appName": "TarefasApp",
+	"webDir": "www",
+	"bundledWebRuntime": false
+}
